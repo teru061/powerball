@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Powerball</title>
+<meta name="description" content="Bet credits on who wins the Power pickleball tournament.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%235B2DB3'/%3E%3Ccircle cx='16' cy='16' r='7' fill='%23DDF03C'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <svg width="58" height="36" viewBox="0 0 58 36" aria-hidden="true">
+        <rect x="1" y="1" width="56" height="34" rx="2" fill="var(--court)"/>
+        <rect x="21" y="1" width="8" height="34" fill="var(--ball)"/>
+        <rect x="29" y="1" width="8" height="34" fill="var(--ball)" opacity=".75"/>
+        <line x1="1" y1="18" x2="21" y2="18" stroke="var(--court-ink)" stroke-width="1.5"/>
+        <line x1="37" y1="18" x2="57" y2="18" stroke="var(--court-ink)" stroke-width="1.5"/>
+        <line x1="29" y1="0" x2="29" y2="36" stroke="var(--ink)" stroke-width="2.5"/>
+        <rect x="1" y="1" width="56" height="34" rx="2" fill="none" stroke="var(--court-ink)" stroke-width="1.5"/>
+      </svg>
+      <div>
+        <h1>Powerball</h1>
+        <p>Who wins the Power pickleball tournament? 14 teams, 100 credits each, prices set by the crowd.</p>
+      </div>
+    </div>
+    <span id="status" class="pill"><i></i><span>Connecting…</span></span>
+    <div id="wallet" class="wallet" hidden>
+      <div><span class="eyebrow">Cash</span><b id="w-cash">0</b></div>
+      <div><span class="eyebrow">Bets worth</span><b id="w-hold">0</b></div>
+      <div class="net"><span class="eyebrow">Net worth</span><b id="w-net">0</b></div>
+    </div>
+  </header>
+
+  <div id="warn" class="banner warn" hidden></div>
+
+  <form id="joinform" class="banner" hidden>
+    <div class="join-copy">
+      <b>Get 100 credits</b>
+      <p>Enter your name to join. Already joined on another device? Use the same name to pick up where you left off.</p>
+    </div>
+    <div class="join-fields">
+      <div class="field"><label for="j-name">Your name</label><input id="j-name" autocomplete="name" maxlength="24" placeholder="e.g. Steven" required></div>
+      <div class="field" id="j-code-wrap" hidden><label for="j-code">Event code</label><input id="j-code" autocomplete="off" maxlength="40"></div>
+      <button id="j-go" class="primary" type="submit">Join</button>
+    </div>
+    <p id="j-msg" class="note err"></p>
+  </form>
+
+  <div id="whoami" class="who-bar" hidden>
+    <span>Betting as <b id="who-name"></b></span>
+    <button id="signout" class="linkbtn" type="button">Not you? Switch</button>
+  </div>
+
+  <div class="main">
+    <section class="card" aria-labelledby="board-title">
+      <div class="sec-head">
+        <h2 id="board-title">Market</h2>
+        <span class="muted small">A share pays <b>100 credits</b> if that team wins. Price ≈ the crowd's odds.</span>
+      </div>
+      <div class="board-head" aria-hidden="true">
+        <span>Team</span><span></span><span class="c-spark">Trend</span><span class="r">Price</span><span class="r c-hold">You own</span><span></span>
+      </div>
+      <div id="board"></div>
+    </section>
+
+    <aside class="rail">
+      <section class="card ticket" aria-label="Trade ticket">
+        <div class="tk-head">
+          <span id="tk-code" class="code">T1</span>
+          <div class="minw0">
+            <div id="tk-name" class="nm"></div>
+            <div id="tk-price" class="muted num small"></div>
+          </div>
+        </div>
+        <div class="seg" role="group" aria-label="Order side">
+          <button id="mode-buy" type="button" aria-pressed="true">Buy</button>
+          <button id="mode-sell" type="button" aria-pressed="false">Sell</button>
+        </div>
+        <div class="field">
+          <label id="tk-label" for="tk-amt">Spend (credits)</label>
+          <div class="amt">
+            <input id="tk-amt" type="number" min="0" step="any" inputmode="decimal" placeholder="0">
+            <button id="tk-max" type="button" class="ghost">Max</button>
+          </div>
+        </div>
+        <div id="tk-quick" class="quick"></div>
+        <dl id="tk-quote" class="quote"></dl>
+        <button id="tk-go" type="button" class="primary">Buy shares</button>
+        <p id="tk-msg" class="note"></p>
+        <div id="tk-hold" class="holding"></div>
+      </section>
+
+      <section class="card" aria-labelledby="lb-title">
+        <div class="sec-head"><h2 id="lb-title">Leaderboard</h2><span class="muted small">Net worth, credits</span></div>
+        <ol id="leaders" class="list"></ol>
+      </section>
+    </aside>
+  </div>
+
+  <section class="card" aria-labelledby="br-title">
+    <div class="sec-head">
+      <h2 id="br-title">Bracket</h2>
+      <span class="muted small">Teams move right as they play, grouped by record. Best record after 3 games takes it; point difference breaks ties.</span>
+    </div>
+    <div class="ladder-scroll"><div id="ladder" class="ladder"></div></div>
+  </section>
+
+  <div class="lower">
+    <section class="card" aria-labelledby="s-title">
+      <div class="sec-head"><h2 id="s-title">Schedule</h2><span id="s-count" class="muted small"></span></div>
+      <div id="scorepad" class="scorepad" hidden>
+        <div class="sp-title"><span class="eyebrow">Enter result</span> <b id="sp-label"></b></div>
+        <div class="sp-grid">
+          <label for="sp-sa" id="sp-a"></label><input id="sp-sa" type="number" min="0" inputmode="numeric" placeholder="–">
+          <label for="sp-sb" id="sp-b"></label><input id="sp-sb" type="number" min="0" inputmode="numeric" placeholder="–">
+        </div>
+        <div class="field"><label for="sp-w">Winner (filled from the score, or pick one)</label><select id="sp-w"></select></div>
+        <div class="btnrow">
+          <button id="sp-save" type="button" class="primary">Save result</button>
+          <button id="sp-clear" type="button" class="ghost">Clear result</button>
+          <button id="sp-close" type="button" class="linkbtn">Close</button>
+        </div>
+        <p id="sp-msg" class="note err"></p>
+      </div>
+      <div id="schedule"></div>
+    </section>
+    <section class="card" aria-labelledby="a-title">
+      <div class="sec-head"><h2 id="a-title">Activity</h2></div>
+      <ul id="feed" class="list feed"></ul>
+    </section>
+  </div>
+
+  <section id="admin" class="card admin" aria-labelledby="ad-title">
+    <div class="sec-head"><h2 id="ad-title">Organizer desk</h2><span class="muted small">Log scores, pause trading, crown the champion.</span></div>
+    <form id="ad-unlock" class="admin-unlock">
+      <div class="field"><label for="ad-key">Organizer password</label><input id="ad-key" type="password" autocomplete="current-password"></div>
+      <button class="ghost" type="submit">Unlock</button>
+      <p id="ad-unlock-msg" class="note err"></p>
+    </form>
+    <div id="ad-body" class="admin-body" hidden>
+      <div class="stack">
+        <div>
+          <h3>Scores</h3>
+          <p class="note">Tap <b>Score</b> on any match in the schedule to enter or fix its result.</p>
+        </div>
+        <div>
+          <h3>Trading</h3>
+          <div class="btnrow">
+            <button id="ad-open" type="button" class="ghost">Open trading</button>
+            <button id="ad-pause" type="button" class="ghost">Pause trading</button>
+          </div>
+        </div>
+        <div>
+          <h3>Knocked out <span class="muted thin">(tap to toggle; their shares drop to 0)</span></h3>
+          <div id="ad-elims" class="chips"></div>
+        </div>
+      </div>
+      <div class="stack">
+        <div>
+          <h3>Crown the champion</h3>
+          <div class="btnrow">
+            <select id="ad-champ" aria-label="Champion"></select>
+            <button id="ad-settle" type="button" class="danger">Settle market</button>
+            <button id="ad-unsettle" type="button" class="ghost" hidden>Undo settlement</button>
+          </div>
+          <p id="ad-settle-msg" class="note"></p>
+        </div>
+        <div>
+          <h3>Price sensitivity</h3>
+          <div class="btnrow">
+            <label for="ad-b-param" class="ink">Liquidity b</label>
+            <input id="ad-b-param" type="number" min="5" max="200" step="1" style="width:6rem">
+            <button id="ad-b-save" type="button" class="ghost">Save</button>
+          </div>
+          <p class="note">Higher b means bets move prices less. Locked once the first bet is placed.</p>
+        </div>
+        <button id="ad-lock" type="button" class="linkbtn">Lock the organizer desk on this device</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="card how" aria-label="How it works">
+    <div><span class="eyebrow">Credits</span><p>Everyone who joins gets <b>100 credits</b>. Spend them on any team, as many teams as you like. Sell back any time before the champion is crowned.</p></div>
+    <div><span class="eyebrow">Pricing</span><p>Each buy pushes that team's price up and the others down, so backing the favourite costs more. Prices across live teams always add to 100.</p></div>
+    <div><span class="eyebrow">Payout</span><p>When the champion is crowned, each of their shares pays <b>100 credits</b>. Shares in other teams pay nothing. Highest net worth wins bragging rights.</p></div>
+  </section>
+</div>
+<div id="toast" class="toast" role="status" hidden></div>
+<script type="module" src="/app.js"></script>
+</body>
+</html>
